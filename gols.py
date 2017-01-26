@@ -23,15 +23,9 @@ import logging
 import requests
 from utils.hidden_password import HiddenPassword
 
+logger = logging.getLogger(__name__)
+logging.basicConfig()
 
-from http.client import HTTPConnection
-HTTPConnection.debuglevel = 1
-
-logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
-logging.getLogger().setLevel(logging.DEBUG)
-requests_log = logging.getLogger("requests.packages.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
 
 @click.command(short_help='uploads .fit files to your garmin connect account')
 # @click.option('--username', '-u',  # prompt=True,
@@ -42,16 +36,22 @@ requests_log.propagate = True
 #                   os.environ.get('GARMIN_CONNECT_PASSWORD', '')),
 #               help='Defaults to GARMIN_CONNECT_USER environment variable',
 #               hide_input=True)
-@click.option('--debug/--no_debug', default=False, help='Set to true to see debug logs on top of info')
-@click.option('--directory_fit', '-d', type=click.Path(exists=True, file_okay=False), help='Path of your .fit files on your watch')
+
+@click.option('--directory_fit', '-d', required=True, type=click.Path(exists=True, file_okay=False), help='Path of your .fit files on your watch mount path')
 @click.option('--notifcation/--no_notification', '-n', default=False, help='Get notified')
 @click.option('--move/--no_move', '-m', default=False, help='Move files upon upload')
+@click.option('--debug/--no_debug', default=False, help='Set to true to see debug logs on top of info')
 def upload(debug, directory_fit, notifcation, move):
     # do we need output ?
     if debug:
+        from http.client import HTTPConnection
+        HTTPConnection.debuglevel = 1
+        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log.setLevel(logging.DEBUG)
+        requests_log.propagate = True
         logging.root.setLevel(level=logging.DEBUG)
     else:
-        logging.root.setLevel(level=logging.INFO)
+        logger.setLevel(level=logging.INFO)
 
     # config loading
     conf_file_path, conf_dir_fit = init()
@@ -98,12 +98,17 @@ def upload(debug, directory_fit, notifcation, move):
     }
 
     #begin session with headers because, requests client isn't an option, dunno if Icewasel is still banned...
+    logger.info('Login into Garmin connect')
     s = requests.session()
     s.headers.update(headers)
     # we need the cookies from the login page before we can post the user/pass
     url_login = 'https://sso.garmin.com/sso/login'
     req_login = s.get(url_login, params=params_login)
+    if req_login.status_code != 200:
+        logger.info('issue with {}, you can turn on debug for more info'.format(req_login))
     req_login2 = s.post(url_login, data=data_login)
+    if req_login2.status_code != 200:
+        logger.info('issue with {}, you can turn on debug for more info'.format(req_login2))
     # we need that to authenticate further, kind like a weird way to login but...
     t = req_login2.cookies.get('CASTGC')
     t = 'ST-0' + t[4:]
@@ -112,31 +117,40 @@ def upload(debug, directory_fit, notifcation, move):
     url_post_auth = 'https://connect.garmin.com/post-auth/login'
     params_post_auth = {'ticket': t}
     req_post_auth = s.get(url_post_auth, params=params_post_auth)
+    if req_post_auth.status_code != 200:
+        logger.info('issue with {}, you can turn on debug for more info'.format(req_post_auth))
+    logger.info('Let\'s upload stuff now')
     # login should be done we upload now
     url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
     for filename in os.listdir(directory_fit):
-        # from requests/api.py files doc 'filename', fileobj, 'content_type', custom_headers
+        logger.info('uploading:  {}'.format(filename))
         files = {'data': (filename,
                           open(os.path.join(directory_fit, filename), 'rb'),
                           'application/octet-stream')
                  }
         req5 = s.post(url_upload, files=files)
-        if notifcation:
-            fn = req5.json()['detailedImportResult']['fileName']
-            if 'failures' in req5.json()['detailedImportResult']:
-                for failure in req5.json()['detailedImportResult']['failures']:
-                    m_failures = failure['messages'][0]['content']
+        if req5.status_code != 200:
+            logger.info('issue with {}, you can turn on debug for more info'.format(req5))
+
+        fn = req5.json()['detailedImportResult']['fileName']
+        if 'failures' in req5.json()['detailedImportResult']:
+            for failure in req5.json()['detailedImportResult']['failures']:
+                m_failures = failure['messages'][0]['content']
+                logger.info(m_failures)
+                if notifcation:
                     Notify.init('gols')
                     message = u'{} upload failed\n{}\n'.format(fn, m_failures)
                     notif = Notify.Notification.new('gols', '--FAILURE--\n'+message)
                     # notif.set_urgency(Notify.Urgency.CRITICAL)
                     notif.show()
-            if 'successes' in req5.json()['detailedImportResult']:
-                for successes in req5.json()['detailedImportResult']['successes']:
-                    m_success = failure['messages'][0]['content']
+        if 'successes' in req5.json()['detailedImportResult']:
+            for successes in req5.json()['detailedImportResult']['successes']:
+                m_success = 'https://connect.garmin.com/modern/activity/'+str(successes['internalId'])
+                logger.info(m_success)
+                if notifcation:
                     Notify.init('gols')
-                    message = u'{} upload succeeded\n{}\n'.format(fn, m_success)
-                    notif = Notify.Notification.new('gols', '--SUCCESS--\n'+message)
+                    message = '--SUCCESS--\n{} upload succeeded\n{}\n'.format(fn, m_success)
+                    notif = Notify.Notification.new('gols', message)
                     # notif.set_urgency(Notify.Urgency.CRITICAL)
                     notif.show()
         if move:
@@ -145,6 +159,7 @@ def upload(debug, directory_fit, notifcation, move):
 
 def parse_config_or_create_new(conf_file_path):
     if not os.path.isfile(conf_file_path):
+        logger.info('no config file found, if you press Y/y next it will prompt for you to change it')
         if click.confirm('Fill the required info or edit the {} file yourself and restart, No will stop'.format(conf_file_path)):
             with open(conf_file_path, 'w') as ymlfile:
                 username = click.prompt('enter you Garmin Connect username')
@@ -153,7 +168,7 @@ def parse_config_or_create_new(conf_file_path):
         else:
             with open(conf_file_path, 'w') as ymlfile:
                 yaml.dump({'username': 'username', 'password': 'password'}, ymlfile, default_flow_style=False)
-            logging.info('{} created, you need to fill them')
+            logger.info('{} created, you need to fill them now')
     else:
         with open(conf_file_path, 'r') as ymlfile:
             config = yaml.load(ymlfile)
@@ -161,6 +176,7 @@ def parse_config_or_create_new(conf_file_path):
 
 
 def init():
+    logger.info('getting configuration parameters or creating them')
     if os.environ.get('XDG_CONFIG_HOME') is None or os.environ.get('XDG_CONFIG_HOME') == '':
         XDG_CONFIG_HOME = os.path.join(os.path.expanduser('~'), '.config')
     else:
