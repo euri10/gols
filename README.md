@@ -8,8 +8,24 @@
 * run `python3 setup.py install`, or if you prefer `pip install -e .` within your venv
 * you can now run gols as a cli, `gols --help` will show you the options, your watch need to ne mounted
 * should you want to automate the upload a little more by triggering the script automatically, please refer to my blog post [here](https://medium.com/@euri10/gols-garmin-on-linux-sucks-f1f065f7529a#.3htyjn6q8)
+or install the following systemd unit after you created the correct /etc/fstab entry
 
+```bash
+#garmin fenix 2
+UUID=489A-9E97 /media/fenix2 vfat rw,user,uid=1000,gid=1000 0 2
 ```
+```systemd
+[Unit]
+Description=gols a little less now
+Requires=media-fenix2.mount
+After=media-fenix2.mount
+[Service]
+ExecStart=/home/user/PycharmProjects/gols/gols.sh
+[Install]
+WantedBy=media-fenix2.mount
+```
+
+```bash
 (gols) ➜  gols git:(master) ✗ gols --help                          
 Usage: gols [OPTIONS]
 
