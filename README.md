@@ -32,7 +32,7 @@ Usage: gols [OPTIONS]
 Options:
   -d, --directory_fit DIRECTORY   Path of your .fit files on your watch mount
                                   path  [required]
-  -n, --notifcation / --no_notification
+  -n, --notification / --no_notification
                                   Get notified
   -m, --move / --no_move          Move files upon upload
   --debug / --no_debug            Set to true to see debug logs on top of info
