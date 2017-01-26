@@ -38,7 +38,7 @@ logging.basicConfig()
 #               hide_input=True)
 
 @click.option('--directory_fit', '-d', required=True, type=click.Path(exists=True, file_okay=False), help='Path of your .fit files on your watch mount path')
-@click.option('--notifcation/--no_notification', '-n', default=False, help='Get notified')
+@click.option('--notification/--no_notification', '-n', default=False, help='Get notified')
 @click.option('--move/--no_move', '-m', default=False, help='Move files upon upload')
 @click.option('--debug/--no_debug', default=False, help='Set to true to see debug logs on top of info')
 def upload(debug, directory_fit, notifcation, move):
