@@ -7,7 +7,7 @@
 * if you use a venv please refer to my blog post below on the pygobject dependency, or see http://stackoverflow.com/a/31609727/3581357
 * run `python3 setup.py install`, or if you prefer `pip install -e .` within your venv
 * you can now run gols as a cli, `gols --help` will show you the options, your watch need to ne mounted
-* should you want to automate the upload a little more by triggering the script automatically, please refer to my blog post here
+* should you want to automate the upload a little more by triggering the script automatically, please refer to my blog post [here](https://medium.com/@euri10/gols-garmin-on-linux-sucks-f1f065f7529a#.3htyjn6q8)
 
 ```
 (gols) ➜  gols git:(master) ✗ gols --help                          
