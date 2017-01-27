@@ -36,12 +36,11 @@ logging.basicConfig()
 #                   os.environ.get('GARMIN_CONNECT_PASSWORD', '')),
 #               help='Defaults to GARMIN_CONNECT_USER environment variable',
 #               hide_input=True)
-
 @click.option('--directory_fit', '-d', required=True, type=click.Path(exists=True, file_okay=False), help='Path of your .fit files on your watch mount path')
 @click.option('--notification/--no_notification', '-n', default=False, help='Get notified')
 @click.option('--move/--no_move', '-m', default=False, help='Move files upon upload')
 @click.option('--debug/--no_debug', default=False, help='Set to true to see debug logs on top of info')
-def upload(debug, directory_fit, notifcation, move):
+def upload(debug, directory_fit, notification, move):
     # do we need output ?
     if debug:
         from http.client import HTTPConnection
@@ -137,7 +136,7 @@ def upload(debug, directory_fit, notifcation, move):
             for failure in req5.json()['detailedImportResult']['failures']:
                 m_failures = failure['messages'][0]['content']
                 logger.info(m_failures)
-                if notifcation:
+                if notification:
                     Notify.init('gols')
                     message = u'{} upload failed\n{}\n'.format(fn, m_failures)
                     notif = Notify.Notification.new('gols', '--FAILURE--\n'+message)
@@ -147,7 +146,7 @@ def upload(debug, directory_fit, notifcation, move):
             for successes in req5.json()['detailedImportResult']['successes']:
                 m_success = 'https://connect.garmin.com/modern/activity/'+str(successes['internalId'])
                 logger.info(m_success)
-                if notifcation:
+                if notification:
                     Notify.init('gols')
                     message = '--SUCCESS--\n{} upload succeeded\n{}\n'.format(fn, m_success)
                     notif = Notify.Notification.new('gols', message)
