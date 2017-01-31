@@ -1,14 +1,5 @@
 from setuptools import setup, find_packages
 
-# yourpackage/
-#     __init__.py
-#     main.py
-#     utils.py
-#     scripts/
-#         __init__.py
-#         yourscript.py
-# yourscript=yourpackage.scripts.yourscript:cli
-
 setup(
     name='gols',
     version='0.1',
