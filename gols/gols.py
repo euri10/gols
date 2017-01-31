@@ -28,7 +28,7 @@ logging.basicConfig()
 class Config(dict):
     def __init__(self):
         self.template = {'username': 'username', 'password': 'password'}
-        self.path = self._create_or_load(click.get_app_dir('my_app'),
+        self.path = self._create_or_load(click.get_app_dir('gols'),
                                          'config.yaml')
         self.conf_dir_fit = self._conf_dir_fit(click.get_app_dir('my_app'),
                                                'fit')
