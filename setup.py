@@ -1,14 +1,24 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
+# yourpackage/
+#     __init__.py
+#     main.py
+#     utils.py
+#     scripts/
+#         __init__.py
+#         yourscript.py
+# yourscript=yourpackage.scripts.yourscript:cli
 
 setup(
     name='gols',
     version='0.1',
-    py_modules=['gols'],
+    packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         'Click', 'requests', 'pyyaml',
     ],
     entry_points='''
         [console_scripts]
-        gols=gols:upload
+        gols=gols.gols:cli
     ''',
 )

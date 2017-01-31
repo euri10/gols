@@ -12,7 +12,7 @@ or install the following systemd unit after you created the correct /etc/fstab e
 
 ```bash
 #garmin fenix 2
-UUID=489A-9E97 /media/fenix2 vfat rw,user,uid=1000,gid=1000 0 2
+UUID=489A-9E97 /media/fenix2 vfat auto,nofail,rw,user,uid=1000,gid=1000 0 2
 ```
 ```systemd
 [Unit]
@@ -26,17 +26,15 @@ WantedBy=media-fenix2.mount
 ```
 
 ```bash
-(gols) ➜  gols git:(master) ✗ gols --help                          
-Usage: gols [OPTIONS]
+(gols) ➜  gols git:(master) ✗ gols
+Usage: gols [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  -d, --directory_fit DIRECTORY   Path of your .fit files on your watch mount
-                                  path  [required]
-  -n, --notification / --no_notification
-                                  Get notified
-  -m, --move / --no_move          Move files upon upload
-  --debug / --no_debug            Set to true to see debug logs on top of info
-  --help                          Show this message and exit.
+  --debug / --no_debug  Set to true to see debug logs on top of info
+  --help                Show this message and exit.
+
+Commands:
+  upload  uploads .fit files to your garmin connect account
   ```
   
 **Issues**
