@@ -145,3 +145,5 @@ ENV/
 # Rope project settings
 .ropeproject
 
+.idea/
+gols.sh
