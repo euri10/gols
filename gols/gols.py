@@ -100,6 +100,8 @@ def cli(config, debug):
               help='Get notified')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
+
+
 def upload(config, directory_fit, notification, move):
     username = config.configdict['username']
     password = config.configdict['password']
@@ -170,7 +172,9 @@ def upload(config, directory_fit, notification, move):
             req_post_auth))
     logger.info('Let\'s upload stuff now')
     # login should be done we upload now
-    url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
+
+    #url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
+    url_upload = 'https://connect.garmin.com/modern/proxy/upload-service/upload/.fit'
     if len(os.listdir(directory_fit)):
         for filename in os.listdir(directory_fit):
             logger.info('uploading:  {}'.format(filename))
@@ -178,6 +182,7 @@ def upload(config, directory_fit, notification, move):
                               open(os.path.join(directory_fit, filename), 'rb'),
                               'application/octet-stream')
                      }
+            s.headers.update({'Referer':'https://connect.garmin.com/modern/import-data', 'NK':'NT'})
             req5 = s.post(url_upload, files=files)
             if req5.status_code != 200:
                 logger.info(
