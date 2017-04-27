@@ -15,8 +15,7 @@ class Config(dict):
         self.template = {'username': 'username', 'password': 'password'}
         self.path = self._create_or_load(click.get_app_dir('gols'),
                                          'config.yaml')
-        self.conf_dir_fit = self._conf_dir_fit(click.get_app_dir('my_app'),
-                                               'fit')
+        self.conf_dir_fit = self._conf_dir_fit(click.get_app_dir('gols'), 'fit')
         super(Config, self).__init__()
 
     @staticmethod
@@ -42,9 +41,7 @@ class Config(dict):
         with open(self.path, 'r') as ymlfile:
             self.configdict = yaml.load(ymlfile)
             if self.configdict == self.template:
-                if click.confirm(
-                        'the config file {} has been created, edit it please'.format(
-                                self.path), abort=True):
+                if click.confirm('the config file {} has been created, edit it please'.format(self.path), abort=True):
                     with open(self.path, 'w') as ymlfile:
                         username = click.prompt(
                             'enter you Garmin Connect username')
