@@ -1,25 +1,10 @@
 import os
-import sys
 import logging
 import click
 import requests
 import shutil
 import yaml
 
-try:
-    import gi
-    from gi.repository import GLib
-except ImportError as e:
-    print('Dependency missing: python-gobject')
-    print(e)
-    sys.exit(1)
-try:
-    gi.require_version('Notify', '0.7')
-    from gi.repository import Notify
-except (ImportError, ValueError) as e:
-    print('Dependency missing: libnotify')
-    print(e)
-    sys.exit(1)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -100,8 +85,6 @@ def cli(config, debug):
               help='Get notified')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
-
-
 def upload(config, directory_fit, notification, move):
     username = config.configdict['username']
     password = config.configdict['password']
@@ -144,8 +127,8 @@ def upload(config, directory_fit, notification, move):
         'displayNameRequired': 'false',
         'rememberme': 'on',
     }
-
-    # begin session with headers because, requests client isn't an option, dunno if Icewasel is still banned...
+    # begin session with headers because, requests client isn't an option,
+    # dunno if Icewasel is still banned...
     logger.info('Login into Garmin connect')
     s = requests.session()
     s.headers.update(headers)
@@ -159,11 +142,13 @@ def upload(config, directory_fit, notification, move):
     if req_login2.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_login2))
-    # we need that to authenticate further, kind like a weird way to login but...
+    # we need that to authenticate further,
+    # kind like a weird way to login but...
     t = req_login2.cookies.get('CASTGC')
     t = 'ST-0' + t[4:]
     # now the auth with the cookies we got
-    # url_post_auth = 'https://connect.garmin.com/modern' this one I still don't know how to get it
+    # url_post_auth = 'https://connect.garmin.com/modern'
+    # this one I still don't know how to get it
     url_post_auth = 'https://connect.garmin.com/post-auth/login'
     params_post_auth = {'ticket': t}
     req_post_auth = s.get(url_post_auth, params=params_post_auth)
@@ -173,7 +158,6 @@ def upload(config, directory_fit, notification, move):
     logger.info('Let\'s upload stuff now')
     # login should be done we upload now
 
-    #url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
     url_upload = 'https://connect.garmin.com/modern/proxy/upload-service/upload/.fit'
     if len(os.listdir(directory_fit)):
         for filename in os.listdir(directory_fit):
@@ -195,29 +179,17 @@ def upload(config, directory_fit, notification, move):
                     m_failures = failure['messages'][0]['content']
                     logger.info(m_failures)
                     if notification:
-                        Notify.init('gols')
-                        message = u'{} upload failed\n{}\n'.format(fn,
-                                                                   m_failures)
-                        notif = Notify.Notification.new('gols',
-                                                        '--FAILURE--\n' + message)
-                        # notif.set_urgency(Notify.Urgency.CRITICAL)
-                        notif.show()
+                        pass
             if 'successes' in req5.json()['detailedImportResult']:
                 for successes in req5.json()['detailedImportResult']['successes']:
                     m_success = 'https://connect.garmin.com/modern/activity/' + str(
                         successes['internalId'])
                     logger.info(m_success)
                     if notification:
-                        Notify.init('gols')
-                        message = '--SUCCESS--\n{} upload succeeded\n{}\n'.format(
-                            fn, m_success)
-                        notif = Notify.Notification.new('gols', message)
-                        # notif.set_urgency(Notify.Urgency.CRITICAL)
-                        notif.show()
+                        pass
             if move:
                 shutil.move(os.path.join(directory_fit, filename),
                             os.path.join(conf_dir_fit, filename))
-        Notify.uninit()
         logger.info('Done uploading')
     else:
         logger.info('No file found in {}'.format(directory_fit))

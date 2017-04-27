@@ -6,10 +6,10 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'Click', 'requests', 'pyyaml',
+        'Click', 'requests', 'pyyaml', 'testfixtures',
     ],
     entry_points='''
         [console_scripts]
-        gols=gols.gols:cli
+        gols=src.gols:cli
     ''',
 )

@@ -1,8 +1,8 @@
 import logging
 import pytest
 from click.testing import CliRunner
-from ..gols.gols import upload, cli
 from testfixtures import LogCapture
+from src.gols import upload, cli
 
 
 @pytest.fixture(scope='function')
