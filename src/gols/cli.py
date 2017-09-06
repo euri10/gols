@@ -123,7 +123,8 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
     # url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
     url_upload = 'https://connect.garmin.com/modern/proxy/upload-service/upload/.fit'
     if len(os.listdir(directory_fit)):
-        for filename in os.listdir(directory_fit):
+        logger.debug([f for f in os.listdir(directory_fit) if os.path.isfile(os.path.join(directory_fit, f))])
+        for filename in [f for f in os.listdir(directory_fit) if os.path.isfile(os.path.join(directory_fit, f))]:
             logger.info('uploading:  {}'.format(filename))
             files = {'data': (filename,
                               open(os.path.join(directory_fit, filename), 'rb'),

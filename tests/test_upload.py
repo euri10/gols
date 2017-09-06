@@ -1,6 +1,7 @@
 import os
 
 import pytest
+
 from click.testing import CliRunner
 from testfixtures import LogCapture
 
@@ -9,44 +10,42 @@ from gols.cli import upload
 
 
 @pytest.fixture(scope='function')
-def runnerfs(request):
-    runner = CliRunner()
-    with runner.isolated_filesystem() as fs:
-        yield runner, fs
+def runner():
+    yield CliRunner()
+
+
+@pytest.fixture(scope='function')
+def fs():
+    yield os.path.join(os.getcwd(), 'directory_fit')
 
 
 @pytest.fixture(scope='function')
 def cdf():
-    fit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fit')
-    return fit
+    yield os.path.join(os.getcwd(), 'conf_dir_fit')
 
 
-def test_debug_turned_on(runnerfs):
-    runner, fs = runnerfs
+def test_debug_turned_on(runner):
     with LogCapture() as l:
         result = runner.invoke(cli, ['--debug', 'upload'])
         assert result.exit_code == 2
         assert 'Debug level set on' in str(l)
 
 
-def test_upload_help(runnerfs):
-    runner, fs = runnerfs
+def test_upload_help(runner):
     result = runner.invoke(upload, ['--help'])
     assert result.exit_code == 0
     assert 'Usage' in result.output
 
 
-def test_required_fit_directory(runnerfs):
-    runner, fs = runnerfs
+def test_required_fit_directory(runner, fs):
     result = runner.invoke(upload, ['upload', fs])
     assert result.exit_code == 2
     assert 'Error: Missing option' in result.output
 
 
-def test_no_file_found(runnerfs, cdf):
+def test_no_file_found(runner, fs, cdf):
     username = 'gols@mailinator.com'
     password = 'G0lsG0ls'
-    runner, fs = runnerfs
     with LogCapture() as l:
         # logger = logging.getLogger()
         result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf,
