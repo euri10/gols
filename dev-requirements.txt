@@ -1,5 +1,0 @@
-pytest
-click
-requests
-pyyaml
-testfixtures

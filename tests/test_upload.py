@@ -3,7 +3,6 @@ import os
 import pytest
 from click.testing import CliRunner
 from testfixtures import LogCapture
-from src.gols import upload, cli
 
 from gols.cli import cli
 from gols.cli import upload
