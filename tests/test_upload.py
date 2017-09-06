@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from click.testing import CliRunner
 from testfixtures import LogCapture
 
@@ -16,12 +15,12 @@ def runner():
 
 @pytest.fixture(scope='function')
 def fs():
-    yield os.path.join(os.getcwd(), 'directory_fit')
+    yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit')
 
 
 @pytest.fixture(scope='function')
 def cdf():
-    yield os.path.join(os.getcwd(), 'conf_dir_fit')
+    yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit')
 
 
 def test_debug_turned_on(runner):
@@ -43,7 +42,7 @@ def test_required_fit_directory(runner, fs):
     assert 'Error: Missing option' in result.output
 
 
-def test_no_file_found(runner, fs, cdf):
+def test_upload_fit(runner, fs, cdf):
     username = 'gols@mailinator.com'
     password = 'G0lsG0ls'
     with LogCapture() as l:
@@ -53,7 +52,7 @@ def test_no_file_found(runner, fs, cdf):
         print(result.output)
         print(l)
         assert result.exit_code == 0
-        assert 'No file found in {}'.format(fs) in str(l)
+        assert 'Done uploading'.format(fs) in str(l)
 
 
 # @pytest.mark.parametrize('args, expected_output, expected_exit_code',
