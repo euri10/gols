@@ -1,9 +1,11 @@
+import os
+
 import pytest
 from click.testing import CliRunner
 from testfixtures import LogCapture
 
-from ..gols.gols import cli
-from ..gols.gols import upload
+from gols.cli import cli
+from gols.cli import upload
 
 
 @pytest.fixture(scope='function')
@@ -11,6 +13,20 @@ def runnerfs(request):
     runner = CliRunner()
     with runner.isolated_filesystem() as fs:
         yield runner, fs
+
+
+@pytest.fixture(scope='function')
+def cdf():
+    fit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fit')
+    return fit
+
+
+def test_debug_turned_on(runnerfs):
+    runner, fs = runnerfs
+    with LogCapture() as l:
+        result = runner.invoke(cli, ['--debug', 'upload'])
+        assert result.exit_code == 2
+        assert 'Debug level set on' in str(l)
 
 
 def test_upload_help(runnerfs):
@@ -22,16 +38,18 @@ def test_upload_help(runnerfs):
 
 def test_required_fit_directory(runnerfs):
     runner, fs = runnerfs
-    result = runner.invoke(cli, ['upload', fs])
+    result = runner.invoke(upload, ['upload', fs])
     assert result.exit_code == 2
     assert 'Error: Missing option' in result.output
 
 
-def test_ok(runnerfs):
+def test_no_file_found(runnerfs, cdf, monkeypatch):
+    monkeypatch.setenv('GARMINCONNECT_USERNAME', 'gols@mailinator.com')
+    monkeypatch.setenv('GARMINCONNECT_PASSWORD', 'G0lsG0ls')
     runner, fs = runnerfs
     with LogCapture() as l:
         # logger = logging.getLogger()
-        result = runner.invoke(cli, ['upload', '-d', fs])
+        result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf])
         assert result.exit_code == 0
         assert 'No file found in {}'.format(fs) in str(l)
 

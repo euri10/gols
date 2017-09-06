@@ -31,17 +31,16 @@ logging.basicConfig()
               help='Set to true to see debug logs on top of info')
 def cli(debug):
     if debug:
-        from http.client import HTTPConnection
-        HTTPConnection.debuglevel = 1
         requests_log = logging.getLogger("requests.packages.urllib3")
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
         logging.root.setLevel(level=logging.DEBUG)
+        logger.info('Debug level set on')
     else:
         logger.setLevel(level=logging.INFO)
 
 
-@click.command(short_help='uploads .fit files to your garmin connect account')
+@cli.command(short_help='uploads .fit files to your garmin connect account')
 @click.option('--directory_fit', '-d', required=True,
               type=click.Path(exists=True, file_okay=False),
               help='Path of your .fit files on your watch mount path')
