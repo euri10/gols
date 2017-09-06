@@ -15,7 +15,6 @@ Overview
         | |landscape| |scrutinizer| |codacy| |codeclimate|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/gols/badge/?style=flat
     :target: https://readthedocs.org/projects/gols
