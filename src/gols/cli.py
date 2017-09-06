@@ -14,90 +14,22 @@ Why does this file exist, and why not put this in __main__?
 
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
-import click
 
-import os
-import sys
 import logging
+import os
+import shutil
+
 import click
 import requests
-import shutil
-import yaml
-
-try:
-    import gi
-    from gi.repository import GLib
-except ImportError as e:
-    print('Dependency missing: python-gobject')
-    print(e)
-    sys.exit(1)
-try:
-    gi.require_version('Notify', '0.7')
-    from gi.repository import Notify
-except (ImportError, ValueError) as e:
-    print('Dependency missing: libnotify')
-    print(e)
-    sys.exit(1)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
 
 
-class Config(dict):
-    def __init__(self):
-        self.template = {'username': 'username', 'password': 'password'}
-        self.path = self._create_or_load(click.get_app_dir('gols'),
-                                         'config.yaml')
-        self.conf_dir_fit = self._conf_dir_fit(click.get_app_dir('my_app'),
-                                               'fit')
-        super(Config, self).__init__()
-
-    @staticmethod
-    def _conf_dir_fit(app_directory, directory):
-        conf_dir_fit = os.path.join(app_directory, directory)
-        if not os.path.exists(conf_dir_fit):
-            os.makedirs(conf_dir_fit)
-        return conf_dir_fit
-
-    @staticmethod
-    def _create_or_load(directory, fn):
-        if os.path.exists(os.path.join(directory, fn)):
-            return os.path.join(directory, fn)
-        else:
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-                with open(os.path.join(directory, fn), 'w') as ymlfile:
-                    yaml.dump({'username': 'username', 'password': 'password'},
-                              ymlfile, default_flow_style=False)
-                return os.path.join(directory, fn)
-
-    def load(self):
-        with open(self.path, 'r') as ymlfile:
-            self.configdict = yaml.load(ymlfile)
-            if self.configdict == self.template:
-                if click.confirm(
-                        'the config file {} has been created, edit it please'.format(
-                                self.path), abort=True):
-                    with open(self.path, 'w') as ymlfile:
-                        username = click.prompt(
-                            'enter you Garmin Connect username')
-                        password = click.prompt(
-                            'enter you Garmin Connect password',
-                            hide_input=True)
-                        yaml.dump({'username': username, 'password': password},
-                                  ymlfile, default_flow_style=False)
-                    self.load()
-
-
-pass_config = click.make_pass_decorator(Config, ensure=True)
-
-
 @click.group()
-@pass_config
 @click.option('--debug/--no_debug', default=False,
               help='Set to true to see debug logs on top of info')
-def cli(config, debug):
-    config.load()
+def cli(debug):
     if debug:
         from http.client import HTTPConnection
         HTTPConnection.debuglevel = 1
@@ -110,19 +42,18 @@ def cli(config, debug):
 
 
 @click.command(short_help='uploads .fit files to your garmin connect account')
-@pass_config
 @click.option('--directory_fit', '-d', required=True,
               type=click.Path(exists=True, file_okay=False),
               help='Path of your .fit files on your watch mount path')
-@click.option('--notification/--no_notification', '-n', default=False,
-              help='Get notified')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
-def upload(config, directory_fit, notification, move):
-    username = config.configdict['username']
-    password = config.configdict['password']
-    conf_dir_fit = config.conf_dir_fit
-
+@click.option('--username', '-u', required=True, prompt=True,
+              default=lambda: os.environ.get('GARMINCONNECT_USERNAME', ''))
+@click.option('--password', '-p', required=True, prompt=True,
+              default=lambda: os.environ.get('GARMINCONNECT_PASSWORD', ''))
+@click.option('--conf_dir_fit', '-c', required=True,
+               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True)) # noqa
+def upload(directory_fit, move, username, password, conf_dir_fit):
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0',
     }
@@ -189,7 +120,7 @@ def upload(config, directory_fit, notification, move):
     logger.info('Let\'s upload stuff now')
     # login should be done we upload now
 
-    #url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
+    # url_upload = 'https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit'
     url_upload = 'https://connect.garmin.com/modern/proxy/upload-service/upload/.fit'
     if len(os.listdir(directory_fit)):
         for filename in os.listdir(directory_fit):
@@ -198,42 +129,28 @@ def upload(config, directory_fit, notification, move):
                               open(os.path.join(directory_fit, filename), 'rb'),
                               'application/octet-stream')
                      }
-            s.headers.update({'Referer':'https://connect.garmin.com/modern/import-data', 'NK':'NT'})
+            s.headers.update({'Referer': 'https://connect.garmin.com/modern/import-data', 'NK': 'NT'})
             req5 = s.post(url_upload, files=files)
             if req5.status_code != 200:
                 logger.info(
                     'issue with {}, you can turn on debug for more info'.format(
                         req5))
 
-            fn = req5.json()['detailedImportResult']['fileName']
+            # fn = req5.json()['detailedImportResult']['fileName']
             if 'failures' in req5.json()['detailedImportResult']:
                 for failure in req5.json()['detailedImportResult']['failures']:
                     m_failures = failure['messages'][0]['content']
                     logger.info(m_failures)
-                    if notification:
-                        Notify.init('gols')
-                        message = u'{} upload failed\n{}\n'.format(fn,
-                                                                   m_failures)
-                        notif = Notify.Notification.new('gols',
-                                                        '--FAILURE--\n' + message)
-                        # notif.set_urgency(Notify.Urgency.CRITICAL)
-                        notif.show()
             if 'successes' in req5.json()['detailedImportResult']:
                 for successes in req5.json()['detailedImportResult']['successes']:
                     m_success = 'https://connect.garmin.com/modern/activity/' + str(
                         successes['internalId'])
                     logger.info(m_success)
-                    if notification:
-                        Notify.init('gols')
-                        message = '--SUCCESS--\n{} upload succeeded\n{}\n'.format(
-                            fn, m_success)
-                        notif = Notify.Notification.new('gols', message)
-                        # notif.set_urgency(Notify.Urgency.CRITICAL)
-                        notif.show()
+
             if move:
                 shutil.move(os.path.join(directory_fit, filename),
                             os.path.join(conf_dir_fit, filename))
-        Notify.uninit()
+
         logger.info('Done uploading')
     else:
         logger.info('No file found in {}'.format(directory_fit))

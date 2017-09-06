@@ -1,8 +1,9 @@
-import logging
 import pytest
 from click.testing import CliRunner
-from ..gols.gols import upload, cli
 from testfixtures import LogCapture
+
+from ..gols.gols import cli
+from ..gols.gols import upload
 
 
 @pytest.fixture(scope='function')
@@ -29,7 +30,7 @@ def test_required_fit_directory(runnerfs):
 def test_ok(runnerfs):
     runner, fs = runnerfs
     with LogCapture() as l:
-        logger = logging.getLogger()
+        # logger = logging.getLogger()
         result = runner.invoke(cli, ['upload', '-d', fs])
         assert result.exit_code == 0
         assert 'No file found in {}'.format(fs) in str(l)
@@ -47,6 +48,3 @@ def test_ok(runnerfs):
 #     assert result.exit_code == expected_exit_code
 #     print(result.output)
 #     assert expected_output in result.output
-
-
-
