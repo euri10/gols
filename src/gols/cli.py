@@ -1,3 +1,21 @@
+"""
+Module that contains the command line app.
+
+Why does this file exist, and why not put this in __main__?
+
+  You might be tempted to import things from __main__ later, but that will cause
+  problems: the code will get executed twice:
+
+  - When you run `python -mgols` python will execute
+    ``__main__.py`` as a script. That means there won't be any
+    ``gols.__main__`` in ``sys.modules``.
+  - When you import __main__ it will get executed again (as a module) because
+    there's no ``gols.__main__`` in ``sys.modules``.
+
+  Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
+"""
+import click
+
 import os
 import sys
 import logging
@@ -100,8 +118,6 @@ def cli(config, debug):
               help='Get notified')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
-
-
 def upload(config, directory_fit, notification, move):
     username = config.configdict['username']
     password = config.configdict['password']
@@ -222,9 +238,3 @@ def upload(config, directory_fit, notification, move):
     else:
         logger.info('No file found in {}'.format(directory_fit))
     logger.info('Finished')
-
-
-cli.add_command(upload)
-
-if __name__ == '__main__':
-    cli()
