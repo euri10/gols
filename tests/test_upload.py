@@ -43,7 +43,7 @@ def test_required_fit_directory(runnerfs):
     assert 'Error: Missing option' in result.output
 
 
-def test_no_file_found(runnerfs, cdf, monkeypatch):
+def test_no_file_found(runnerfs, cdf):
     username = 'gols@mailinator.com'
     password = 'G0lsG0ls'
     runner, fs = runnerfs
@@ -51,6 +51,7 @@ def test_no_file_found(runnerfs, cdf, monkeypatch):
         # logger = logging.getLogger()
         result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf,
                                      '-u', username, '-p', password])
+        print(result.output)
         print(l)
         assert result.exit_code == 0
         assert 'No file found in {}'.format(fs) in str(l)

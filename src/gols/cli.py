@@ -53,6 +53,7 @@ def cli(debug):
 @click.option('--conf_dir_fit', '-c', required=True,
                type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True)) # noqa
 def upload(directory_fit, move, username, password, conf_dir_fit):
+    logger.info('Uplading stuff')
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0',
     }
