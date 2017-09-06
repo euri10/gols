@@ -1,38 +1,63 @@
-import logging
+import os
+
 import pytest
 from click.testing import CliRunner
 from testfixtures import LogCapture
 from src.gols import upload, cli
 
+from gols.cli import cli
+from gols.cli import upload
+
 
 @pytest.fixture(scope='function')
-def runnerfs(request):
-    runner = CliRunner()
-    with runner.isolated_filesystem() as fs:
-        yield runner, fs
+def runner():
+    yield CliRunner()
 
 
-def test_upload_help(runnerfs):
-    runner, fs = runnerfs
+@pytest.fixture(scope='function')
+def fs():
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit')):
+        os.makedirs(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit'))
+    yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit')
+
+
+@pytest.fixture(scope='function')
+def cdf():
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit')):
+        os.makedirs(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit'))
+    yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit')
+
+
+def test_debug_turned_on(runner):
+    with LogCapture() as l:
+        result = runner.invoke(cli, ['--debug', 'upload'])
+        assert result.exit_code == 2
+        assert 'Debug level set on' in str(l)
+
+
+def test_upload_help(runner):
     result = runner.invoke(upload, ['--help'])
     assert result.exit_code == 0
     assert 'Usage' in result.output
 
 
-def test_required_fit_directory(runnerfs):
-    runner, fs = runnerfs
-    result = runner.invoke(cli, ['upload', fs])
+def test_required_fit_directory(runner, fs):
+    result = runner.invoke(upload, ['upload', fs])
     assert result.exit_code == 2
     assert 'Error: Missing option' in result.output
 
 
-def test_ok(runnerfs):
-    runner, fs = runnerfs
+def test_upload_fit(runner, fs, cdf):
+    username = 'gols@mailinator.com'
+    password = 'G0lsG0ls'
     with LogCapture() as l:
-        logger = logging.getLogger()
-        result = runner.invoke(cli, ['upload', '-d', fs])
+        # logger = logging.getLogger()
+        result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf,
+                                     '-u', username, '-p', password])
+        print(result.output)
+        print(l)
         assert result.exit_code == 0
-        assert 'No file found in {}'.format(fs) in str(l)
+        assert 'Done uploading'.format(fs) in str(l)
 
 
 # @pytest.mark.parametrize('args, expected_output, expected_exit_code',
@@ -47,6 +72,3 @@ def test_ok(runnerfs):
 #     assert result.exit_code == expected_exit_code
 #     print(result.output)
 #     assert expected_output in result.output
-
-
-
