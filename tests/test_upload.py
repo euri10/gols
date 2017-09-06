@@ -15,11 +15,15 @@ def runner():
 
 @pytest.fixture(scope='function')
 def fs():
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit')):
+        os.makedirs(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit'))
     yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'directory_fit')
 
 
 @pytest.fixture(scope='function')
 def cdf():
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit')):
+        os.makedirs(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit'))
     yield os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'conf_dir_fit')
 
 
