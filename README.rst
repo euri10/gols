@@ -28,9 +28,9 @@ Overview
     :alt: Requirements Status
     :target: https://requires.io/github/euri10/gols/requirements/?branch=master
 
-.. |coveralls| image:: https://coveralls.io/repos/euri10/gols/badge.svg?branch=master&service=github
+.. |coveralls| image:: https://coveralls.io/repos/github/euri10/gols/badge.svg?branch=master
     :alt: Coverage Status
-    :target: https://coveralls.io/r/euri10/gols
+    :target: https://coveralls.io/github/euri10/gols?branch=master
 
 .. |codecov| image:: https://codecov.io/github/euri10/gols/coverage.svg?branch=master
     :alt: Coverage Status

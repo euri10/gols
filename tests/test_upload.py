@@ -56,7 +56,7 @@ def test_upload_fit(runner, fs, cdf):
         print(result.output)
         print(l)
         assert result.exit_code == 0
-        assert 'Done uploading'.format(fs) in str(l)
+        assert 'Done uploading' in str(l)
 
 
 # @pytest.mark.parametrize('args, expected_output, expected_exit_code',
