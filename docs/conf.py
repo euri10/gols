@@ -26,7 +26,7 @@ project = u'gols'
 year = '2017'
 author = u'Benoit Barthelet'
 copyright = '{0}, {1}'.format(year, author)
-version = release = u'0.2.0'
+version = release = u'0.3.0'
 
 pygments_style = 'trac'
 templates_path = ['.']
