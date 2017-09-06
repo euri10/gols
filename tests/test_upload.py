@@ -44,12 +44,13 @@ def test_required_fit_directory(runnerfs):
 
 
 def test_no_file_found(runnerfs, cdf, monkeypatch):
-    monkeypatch.setenv('GARMINCONNECT_USERNAME', 'gols@mailinator.com')
-    monkeypatch.setenv('GARMINCONNECT_PASSWORD', 'G0lsG0ls')
+    username = 'gols@mailinator.com'
+    password = 'G0lsG0ls'
     runner, fs = runnerfs
     with LogCapture() as l:
         # logger = logging.getLogger()
-        result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf])
+        result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf,
+                                     '-u', username, '-p', password])
         print(l)
         assert result.exit_code == 0
         assert 'No file found in {}'.format(fs) in str(l)
