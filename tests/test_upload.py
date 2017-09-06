@@ -46,6 +46,7 @@ def test_required_fit_directory(runnerfs):
 def test_no_file_found(runnerfs, cdf, monkeypatch):
     monkeypatch.setenv('GARMINCONNECT_USERNAME', 'gols@mailinator.com')
     monkeypatch.setenv('GARMINCONNECT_PASSWORD', 'G0lsG0ls')
+    print(os.environ.get('GARMINCONNECT_USERNAME'))
     runner, fs = runnerfs
     with LogCapture() as l:
         # logger = logging.getLogger()
