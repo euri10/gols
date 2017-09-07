@@ -54,6 +54,8 @@ What is important in that file is the `media-fenix2.mount`, adapt yours with wha
         Requires=media-fenix2.mount
         After=media-fenix2.mount
         [Service]
+        Environment="GARMINCONNECT_USERNAME=user"
+        Environment="GARMINCONNECT_PASSWORD=password"
         ExecStart=gols --debug upload /media/fenix2/Garmin/Activity -m -c /home/user/.config/gols/fit
         [Install]
         WantedBy=media-fenix2.mount
