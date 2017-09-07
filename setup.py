@@ -24,7 +24,7 @@ def read(*names, **kwargs):
 
 setup(
     name='gols',
-    version='0.3.0',
+    version='0.4.0',
     license='BSD license',
     description='gols',
     long_description='%s\n%s' % (
