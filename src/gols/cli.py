@@ -29,7 +29,7 @@ logging.basicConfig()
 @click.group()
 @click.option('--debug/--no_debug', default=False,
               help='Set to true to see debug logs on top of info')
-def cli(debug):
+def main(debug):
     if debug:
         requests_log = logging.getLogger("requests.packages.urllib3")
         requests_log.setLevel(logging.DEBUG)
@@ -40,18 +40,20 @@ def cli(debug):
         logger.setLevel(level=logging.INFO)
 
 
-@cli.command(short_help='uploads .fit files to your garmin connect account')
+@main.command(short_help='uploads .fit files to your garmin connect account')
 @click.option('--directory_fit', '-d', required=True,
               type=click.Path(exists=True, file_okay=False),
               help='Path of your .fit files on your watch mount path')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
 @click.option('--username', '-u', required=True, prompt=True,
-              default=lambda: os.environ.get('GARMINCONNECT_USERNAME', ''))
+              default=lambda: os.environ.get('GARMINCONNECT_USERNAME', ''),
+              help='The GARMINCONNECT_USERNAME environment variable should you have one set')  # noqa
 @click.option('--password', '-p', required=True, prompt=True,
-              default=lambda: os.environ.get('GARMINCONNECT_PASSWORD', ''))
+              default=lambda: os.environ.get('GARMINCONNECT_PASSWORD', ''),
+              help='The GARMINCONNECT_PASSWORD environment variable should you have one set ')  # noqa
 @click.option('--conf_dir_fit', '-c', required=True,
-               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True)) # noqa
+               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True))  # noqa
 def upload(directory_fit, move, username, password, conf_dir_fit):
     logger.info('Uplading stuff')
     headers = {

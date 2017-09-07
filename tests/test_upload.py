@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 from testfixtures import LogCapture
 
-from gols.cli import cli
+from gols.cli import main
 from gols.cli import upload
 
 
@@ -29,7 +29,7 @@ def cdf():
 
 def test_debug_turned_on(runner):
     with LogCapture() as l:
-        result = runner.invoke(cli, ['--debug', 'upload'])
+        result = runner.invoke(main, ['--debug', 'upload'])
         assert result.exit_code == 2
         assert 'Debug level set on' in str(l)
 
@@ -51,23 +51,8 @@ def test_upload_fit(runner, fs, cdf):
     password = 'G0lsG0ls'
     with LogCapture() as l:
         # logger = logging.getLogger()
-        result = runner.invoke(cli, ['--debug', 'upload', '-d', fs, '-c', cdf,
-                                     '-u', username, '-p', password])
+        result = runner.invoke(main, ['--debug', 'upload', '-d', fs, '-c', cdf, '-u', username, '-p', password])  # noqa
         print(result.output)
         print(l)
         assert result.exit_code == 0
         assert 'Done uploading' in str(l)
-
-
-# @pytest.mark.parametrize('args, expected_output, expected_exit_code',
-#                          [('', 'Error: Missing option', 2),
-#                           (['-d /tmp'], 'Error: Invalid value for', 2),
-#                           (['-d'],'',0)
-#                           ])
-# def test_upload_args(runnerfs, args, expected_output, expected_exit_code):
-#     runner, fs = runnerfs
-#     print(fs)
-#     result = runner.invoke(upload, args=args)
-#     assert result.exit_code == expected_exit_code
-#     print(result.output)
-#     assert expected_output in result.output
