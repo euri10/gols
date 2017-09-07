@@ -34,6 +34,13 @@ def test_debug_turned_on(runner):
         assert 'Debug level set on' in str(l)
 
 
+def test_debug_turned_off(runner):
+    with LogCapture() as l:
+        result = runner.invoke(main, ['upload'])
+        assert result.exit_code == 2
+        assert 'Info level set on' in str(l)
+
+
 def test_upload_help(runner):
     result = runner.invoke(upload, ['--help'])
     assert result.exit_code == 0

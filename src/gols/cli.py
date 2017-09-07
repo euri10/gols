@@ -38,6 +38,7 @@ def main(debug):
         logger.info('Debug level set on')
     else:
         logger.setLevel(level=logging.INFO)
+        logger.info('Info level set on')
 
 
 @main.command(short_help='uploads .fit files to your garmin connect account')
