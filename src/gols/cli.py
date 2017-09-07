@@ -46,10 +46,10 @@ def main(debug):
               help='Path of your .fit files on your watch mount path')
 @click.option('--move/--no_move', '-m', default=False,
               help='Move files upon upload')
-@click.option('--username', '-u', required=True, prompt=True,
+@click.option('--username', '-u', required=True,
               default=lambda: os.environ.get('GARMINCONNECT_USERNAME', ''),
               help='The GARMINCONNECT_USERNAME environment variable should you have one set')  # noqa
-@click.option('--password', '-p', required=True, prompt=True,
+@click.option('--password', '-p', required=True,
               default=lambda: os.environ.get('GARMINCONNECT_PASSWORD', ''),
               help='The GARMINCONNECT_PASSWORD environment variable should you have one set ')  # noqa
 @click.option('--conf_dir_fit', '-c', required=True,

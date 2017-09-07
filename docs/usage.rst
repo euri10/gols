@@ -19,7 +19,8 @@ You can use gols with your favorite command line terminal, that's fine, just run
       upload  uploads .fit files to your garmin connect account
 
 The upload command needs in particular your username and password account. You can pass them with the `-u` and `-p` switches respectively, however it's recommended you use the environment variables.
-So either you do:
+So either you do
+
 .. code-block:: bash
 
     export GARMINCONNECT_USERNAME=user GARMINCONNECT_PASSWORD=password gols --debug upload blabblablabla
@@ -53,6 +54,6 @@ What is important in that file is the `media-fenix2.mount`, adapt yours with wha
         Requires=media-fenix2.mount
         After=media-fenix2.mount
         [Service]
-        ExecStart=gols -d /media/fenix2/Garmin/Activity -m /home/lotso/.config/gols/fit
+        ExecStart=gols --debug upload /media/fenix2/Garmin/Activity -m -c /home/user/.config/gols/fit
         [Install]
         WantedBy=media-fenix2.mount
