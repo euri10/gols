@@ -17,6 +17,7 @@ Why does this file exist, and why not put this in __main__?
 
 import logging
 import os
+import re
 import shutil
 
 import click
@@ -60,31 +61,36 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0',
     }
-    params_login = {
-        'service': 'https://connect.garmin.com/modern/',
-        'webhost': 'olaxpw-conctmodern011',
-        'source': 'https://connect.garmin.com/en-US/signin',
-        'redirectAfterAccountLoginUrl': 'https://connect.garmin.com/modern/',
-        'redirectAfterAccountCreationUrl': 'https://connect.garmin.com/modern/',
-        'gauthHost': 'https://sso.garmin.com/sso',
-        'locale': 'en_US',
-        'id': 'gauth-widget',
-        'cssUrl': 'https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css',
-        'clientId': 'GarminConnect',
-        'rememberMeShown': 'true',
-        'rememberMeChecked': 'false',
-        'createAccountShown': 'true',
-        'openCreateAccount': 'false',
-        'usernameShown': 'false',
-        'displayNameShown': 'true',
-        'consumeServiceTicket': 'false',
-        'initialFocus': 'true',
-        'embedWidget': 'false',
-        'generateExtraServiceTicket': 'false',
-        'globalOptInShown': 'false',
-        'globalOptInChecked': 'false',
-        'connectLegalTerms': 'true',
-    }
+
+    WEBHOST = "https://connect.garmin.com"
+    REDIRECT = "https://connect.garmin.com/post-auth/login"
+    BASE_URL = "http://connect.garmin.com/en-US/signin"
+    GAUTH = "http://connect.garmin.com/gauth/hostname"
+    SSO = "https://sso.garmin.com/sso"
+    CSS = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
+
+    params = {'service': REDIRECT,
+            'webhost': WEBHOST,
+            'source': BASE_URL,
+            'redirectAfterAccountLoginUrl': REDIRECT,
+            'redirectAfterAccountCreationUrl': REDIRECT,
+            'gauthHost': SSO,
+            'locale': 'en_US',
+            'id': 'gauth-widget',
+            'cssUrl': CSS,
+            'clientId': 'GarminConnect',
+            'rememberMeShown': 'true',
+            'rememberMeChecked': 'false',
+            'createAccountShown': 'true',
+            'openCreateAccount': 'false',
+            'usernameShown': 'false',
+            'displayNameShown': 'false',
+            'consumeServiceTicket': 'false',
+            'initialFocus': 'true',
+            'embedWidget': 'false',
+            'generateExtraServiceTicket': 'false'}
+
+
     data_login = {
         'username': username,
         'password': password,
@@ -100,23 +106,28 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
     s = requests.session()
     s.headers.update(headers)
     # we need the cookies from the login page before we can post the user/pass
-    url_login = 'https://sso.garmin.com/sso/login'
-    req_login = s.get(url_login, params=params_login)
+    url_gc_login = 'https://sso.garmin.com/sso/login'
+    req_login = s.get(url_gc_login, params=params)
     if req_login.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_login))
-    req_login2 = s.post(url_login, data=data_login)
+    req_login2 = s.post(url_gc_login, data=data_login, params=params)
     if req_login2.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_login2))
-    # we need that to authenticate further, kind like a weird way to login but...
-    t = req_login2.cookies.get('CASTGC')
-    t = 'ST-0' + t[4:]
-    # now the auth with the cookies we got
-    # url_post_auth = 'https://connect.garmin.com/modern' this one I still don't know how to get it
-    url_post_auth = 'https://connect.garmin.com/post-auth/login'
-    params_post_auth = {'ticket': t}
-    req_post_auth = s.get(url_post_auth, params=params_post_auth)
+    # extract the ticket from the login response
+    pattern = re.compile(r".*\?ticket=([-\w]+)\";.*", re.MULTILINE | re.DOTALL)
+    match = pattern.match(req_login2.content)
+    if not match:
+        raise Exception(
+            'Did not get a ticket in the login response. Cannot log in. Did you enter the correct username and password?')
+    login_ticket = match.group(1)
+    print 'login ticket=' + login_ticket
+
+    url_gc_post_auth = 'https://connect.garmin.com/modern/activities?'
+
+    params_post_auth = {'ticket': login_ticket}
+    req_post_auth = s.get(url_gc_post_auth, params=params_post_auth)
     if req_post_auth.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_post_auth))
