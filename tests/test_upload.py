@@ -28,17 +28,17 @@ def cdf():
 
 
 def test_debug_turned_on(runner):
-    with LogCapture() as l:
+    with LogCapture() as lc:
         result = runner.invoke(main, ['--debug', 'upload'])
         assert result.exit_code == 2
-        assert 'Debug level set on' in str(l)
+        assert 'Debug level set on' in str(lc)
 
 
 def test_debug_turned_off(runner):
-    with LogCapture() as l:
+    with LogCapture() as lc:
         result = runner.invoke(main, ['upload'])
         assert result.exit_code == 2
-        assert 'Info level set on' in str(l)
+        assert 'Info level set on' in str(lc)
 
 
 def test_upload_help(runner):
@@ -56,10 +56,10 @@ def test_required_fit_directory(runner, fs):
 def test_upload_fit(runner, fs, cdf):
     username = 'gols@mailinator.com'
     password = 'G0lsG0ls'
-    with LogCapture() as l:
+    with LogCapture() as lc:
         # logger = logging.getLogger()
         result = runner.invoke(main, ['--debug', 'upload', '-d', fs, '-c', cdf, '-u', username, '-p', password])  # noqa
         print(result.output)
-        print(l)
+        print(lc)
         assert result.exit_code == 0
-        assert 'Done uploading' in str(l)
+        assert 'Done uploading' in str(lc)

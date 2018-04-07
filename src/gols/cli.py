@@ -55,7 +55,7 @@ def main(debug):
               default=lambda: os.environ.get('GARMINCONNECT_PASSWORD', ''),
               help='The GARMINCONNECT_PASSWORD environment variable should you have one set ')  # noqa
 @click.option('--conf_dir_fit', '-c', required=True,
-               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True))  # noqa
+              type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True))  # noqa
 def upload(directory_fit, move, username, password, conf_dir_fit):
     logger.info('Uplading stuff')
     headers = {
@@ -65,31 +65,30 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
     WEBHOST = "https://connect.garmin.com"
     REDIRECT = "https://connect.garmin.com/post-auth/login"
     BASE_URL = "http://connect.garmin.com/en-US/signin"
-    GAUTH = "http://connect.garmin.com/gauth/hostname"
+    # GAUTH = "http://connect.garmin.com/gauth/hostname"
     SSO = "https://sso.garmin.com/sso"
     CSS = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
 
     params = {'service': REDIRECT,
-            'webhost': WEBHOST,
-            'source': BASE_URL,
-            'redirectAfterAccountLoginUrl': REDIRECT,
-            'redirectAfterAccountCreationUrl': REDIRECT,
-            'gauthHost': SSO,
-            'locale': 'en_US',
-            'id': 'gauth-widget',
-            'cssUrl': CSS,
-            'clientId': 'GarminConnect',
-            'rememberMeShown': 'true',
-            'rememberMeChecked': 'false',
-            'createAccountShown': 'true',
-            'openCreateAccount': 'false',
-            'usernameShown': 'false',
-            'displayNameShown': 'false',
-            'consumeServiceTicket': 'false',
-            'initialFocus': 'true',
-            'embedWidget': 'false',
-            'generateExtraServiceTicket': 'false'}
-
+              'webhost': WEBHOST,
+              'source': BASE_URL,
+              'redirectAfterAccountLoginUrl': REDIRECT,
+              'redirectAfterAccountCreationUrl': REDIRECT,
+              'gauthHost': SSO,
+              'locale': 'en_US',
+              'id': 'gauth-widget',
+              'cssUrl': CSS,
+              'clientId': 'GarminConnect',
+              'rememberMeShown': 'true',
+              'rememberMeChecked': 'false',
+              'createAccountShown': 'true',
+              'openCreateAccount': 'false',
+              'usernameShown': 'false',
+              'displayNameShown': 'false',
+              'consumeServiceTicket': 'false',
+              'initialFocus': 'true',
+              'embedWidget': 'false',
+              'generateExtraServiceTicket': 'false'}
 
     data_login = {
         'username': username,
@@ -119,10 +118,9 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
     pattern = re.compile(r".*\?ticket=([-\w]+)\";.*", re.MULTILINE | re.DOTALL)
     match = pattern.match(req_login2.content)
     if not match:
-        raise Exception(
-            'Did not get a ticket in the login response. Cannot log in. Did you enter the correct username and password?')
+        raise Exception('Did not get a ticket in the login response. Cannot log in. Did you enter the correct username and password?')
     login_ticket = match.group(1)
-    print 'login ticket=' + login_ticket
+    print('login ticket=' + login_ticket)
 
     url_gc_post_auth = 'https://connect.garmin.com/modern/activities?'
 
