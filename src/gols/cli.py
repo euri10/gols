@@ -116,7 +116,7 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
             req_login2))
     # extract the ticket from the login response
     pattern = re.compile(r".*\?ticket=([-\w]+)\";.*", re.MULTILINE | re.DOTALL)
-    match = pattern.match(req_login2.content)
+    match = pattern.match(req_login2.content.decode())
     if not match:
         raise Exception('Did not get a ticket in the login response. Cannot log in. Did you enter the correct username and password?')
     login_ticket = match.group(1)
