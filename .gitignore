@@ -147,3 +147,4 @@ ENV/
 
 .idea/
 gols.sh
+/.pytest_cache/
