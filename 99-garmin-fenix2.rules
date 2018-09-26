@@ -1,5 +1,1 @@
-# sudo blkid to get watch UUID
-# /dev/sdf: SEC_TYPE="msdos" LABEL="GARMIN" UUID="489A-9E97" TYPE="vfat"
-ACTION=="add", ENV{ID_FS_UUID_ENC}=="489A-9E97", RUN+="/bin/mount -t vfat /dev/%k /mnt"
-ACTION=="remove", ENV{ID_FS_UUID_ENC}=="489A-9E97", RUN+="/bin/umount /dev/%k"
-
+KERNEL=="sdb", SUBSYSTEM=="block", ACTION=="add", ATTRS{idProduct}=="27af", ATTRS{idVendor}=="091e", RUN+="/bin/mount /dev/%k /mnt"
