@@ -1,1 +1,3 @@
-KERNEL=="sdb", SUBSYSTEM=="block", ACTION=="add", ATTRS{idProduct}=="27af", ATTRS{idVendor}=="091e", RUN+="/bin/mount /dev/%k /mnt"
+# udevadm test $(udevadm info -q path -n /dev/disk/by-uuid/489A-9E97)
+# udevadm test $(udevadm info -q path -n /dev/sdf)
+SUBSYSTEM=="block", ATTRS{idProduct}=="27af", ATTRS{idVendor}=="091e", ACTION=="add", RUN{program}+="/usr/src/app/hello.sh &"
