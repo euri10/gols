@@ -22,6 +22,7 @@ import shutil
 
 import click
 import requests
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 logging.basicConfig()
@@ -58,16 +59,18 @@ def main(debug):
               type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True, readable=True))  # noqa
 def upload(directory_fit, move, username, password, conf_dir_fit):
     logger.info('Uplading stuff')
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:51.0) Gecko/20100101 Firefox/51.0',
-    }
 
     WEBHOST = "https://connect.garmin.com"
-    REDIRECT = "https://connect.garmin.com/post-auth/login"
-    BASE_URL = "http://connect.garmin.com/en-US/signin"
+    REDIRECT = "https://connect.garmin.com/modern/"
+    BASE_URL = "https://connect.garmin.com/signin/"
     # GAUTH = "http://connect.garmin.com/gauth/hostname"
     SSO = "https://sso.garmin.com/sso"
     CSS = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0',
+        'Origin': "https://sso.garmin.com"
+    }
 
     params = {'service': REDIRECT,
               'webhost': WEBHOST,
@@ -83,34 +86,43 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
               'rememberMeChecked': 'false',
               'createAccountShown': 'true',
               'openCreateAccount': 'false',
-              'usernameShown': 'false',
               'displayNameShown': 'false',
               'consumeServiceTicket': 'false',
               'initialFocus': 'true',
               'embedWidget': 'false',
-              'generateExtraServiceTicket': 'false'}
+              'generateExtraServiceTicket': 'true',
+              'generateTwoExtraServiceTickets': 'false',
+              'generateNoServiceTicket': 'false',
+              'globalOptInShown': 'true',
+              'globalOptInChecked': 'false',
+              'mobile': 'false',
+              'connectLegalTerms': 'true',
+              'locationPromptShown': 'true',
+              'showPassword': 'true'}
 
     data_login = {
         'username': username,
         'password': password,
-        'embed': 'true',
-        'lt': 'e1s1',
-        '_eventId': 'submit',
-        'displayNameRequired': 'false',
-        'rememberme': 'on',
+        'embed': 'false'
     }
 
     # begin session with headers because, requests client isn't an option, dunno if Icewasel is still banned...
     logger.info('Login into Garmin connect')
     s = requests.session()
     s.headers.update(headers)
-    # we need the cookies from the login page before we can post the user/pass
-    url_gc_login = 'https://sso.garmin.com/sso/login'
-    req_login = s.get(url_gc_login, params=params)
+    # we need the cookies and csrf token from the login page before we can post the user/pass
+    url_gc_login = 'https://sso.garmin.com/sso/signin'
+    req_login = s.get(url_gc_login, params=params, headers=headers)
     if req_login.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_login))
-    req_login2 = s.post(url_gc_login, data=data_login, params=params)
+
+    csrf_input = BeautifulSoup(req_login.content.decode(), 'html.parser').find('input', {'name': '_csrf'})
+    if not csrf_input or not csrf_input.get('value'):
+        raise Exception('Unable to get csrf token from login page.')
+    data_login['_csrf'] = csrf_input.get('value')
+
+    req_login2 = s.post(url_gc_login, data=data_login, params=params, headers=headers)
     if req_login2.status_code != 200:
         logger.info('issue with {}, you can turn on debug for more info'.format(
             req_login2))
@@ -144,7 +156,7 @@ def upload(directory_fit, move, username, password, conf_dir_fit):
                      }
             s.headers.update({'Referer': 'https://connect.garmin.com/modern/import-data', 'NK': 'NT'})
             req5 = s.post(url_upload, files=files)
-            if req5.status_code != 200:
+            if req5.status_code != 201:
                 logger.info(
                     'issue with {}, you can turn on debug for more info'.format(
                         req5))

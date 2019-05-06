@@ -65,7 +65,7 @@ setup(
         # eg: 'keyword1', 'keyword2', 'keyword3',
     ],
     install_requires=[
-        'click', 'pytest', 'testfixtures', 'requests',
+        'click', 'pytest', 'testfixtures', 'requests', 'beautifulsoup4',
     ],
     extras_require={
         # eg:
